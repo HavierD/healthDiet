@@ -37,6 +37,7 @@ dependencies:
   google_fonts: any
   pie_chart: any
   provider: any
+  fluttertoast: ^8.1.1
 
 
   # The following adds the Cupertino Icons font to your application.

@@ -1,10 +1,9 @@
-import 'dart:js_util';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:health_diet/add_new_diet_menu.dart';
 import 'package:health_diet/data/data_one_day.dart';
+import 'package:health_diet/toast_exception_alert.dart';
 import 'package:path/path.dart';
 import 'package:pie_chart/pie_chart.dart';
 import 'package:provider/provider.dart';
@@ -13,27 +12,19 @@ import 'package:sqflite/sqflite.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(const MyApp());
+
   final database = openDatabase(
     join(await getDatabasesPath(), 'health_diet.db'),
     onCreate: (db, version) {
       return db.execute(
-        'CREATE TABLE data (id INTEGER PRIMARY KEY, date TEXT,milk TEXT, nut TEXT, egg TEXT, vegetable TEXT, fruit TEXT, allgrain TEXT , walk TEXT)',
+        'CREATE TABLE if not exists data (date TEXT PRIMARY KEY,milk TEXT, '
+            'nut TEXT, meat TEXT, egg TEXT, vegetable TEXT, fruit TEXT, '
+            'allgrain TEXT , walk TEXT)',
       );
     },
     version: 1,
   );
 
-
-
-  Future<void> insertData(DataOneDay dataOneDay) async {
-    final db = await database;
-    await db.insert('data', dataOneDay.toMap(),
-        conflictAlgorithm: ConflictAlgorithm.replace);
-  }
-
-  // var fido = DataOneDay(date: "1010");
-
-  // insertData(fido);
   Future<List<DataOneDay>> datata() async {
     // Get a reference to the database.
     final db = await database;
@@ -105,21 +96,49 @@ class _MyHomePageState extends State<MyHomePage> {
       // called again, and so nothing would appear to happen.
       _counter++;
     });
-
   }
 
-  Map<String, double> dataMap = {
-    "已经完成": 5,
-  };
+
 
   @override
   Widget build(BuildContext context) {
+    return Consumer<DataOneDayModel>(
+      builder: buildScaffold,
+    );
+  }
+
+  Scaffold buildScaffold(
+      BuildContext context, DataOneDayModel dataOneDayModel, _) {
+    var completedCount = 0.0;
+    // dataOneDayModel.getTodaySnapshot().then((snapshot) {
+    //   for(var e in snapshot.values){
+    //     if (e != null || e != "null"){completedCount++;}
+    //   }
+    //   print("count: $completedCount");
+    //   // dataOneDayModel.refreshUI();
+    // });
+    Map<String, double> dataMap = {
+      "已经完成":  1
+    //       (DataOneDayModel model) {
+    //   model.dbInitChecking();
+    //   var count = 0.0;
+    //   Map<String, Object?> snapshot = <String, Object?>{};
+    //   model.getTodaySnapshot().then((result) {
+    //     snapshot = result;
+    //     return count;
+    //   });
+    //
+    // }(dataOneDayModel),
+    };
+    
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
       ),
       body: Center(
-        child: Column(
+        child:dataOneDayModel.loading
+            ? const CircularProgressIndicator()
+            :  Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             Text(
@@ -127,7 +146,7 @@ class _MyHomePageState extends State<MyHomePage> {
               style: GoogleFonts.maShanZheng(fontSize: 30),
             ),
             PieChart(
-              dataMap: dataMap,
+              dataMap: {"已经完成" : completedCount},
               baseChartColor: Colors.grey,
               totalValue: 7,
               chartRadius: MediaQuery.of(context).size.width / 2,
@@ -141,9 +160,9 @@ class _MyHomePageState extends State<MyHomePage> {
                     MaterialPageRoute(
                         builder: (context) => const AddingNewDietMenu()))
               },
-              child: const Text(
+              child: Text(
                 "增加新的饮食",
-                style: TextStyle(fontSize: 20),
+                  style: GoogleFonts.maShanZheng(fontSize: 20)
               ),
             ),
             const Text(
@@ -155,7 +174,7 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             CupertinoButton(
               child: const Text("test button"),
-              onPressed: () => {},
+              onPressed: () => {ToastExceptionAlert.alert("test toast")},
             ),
           ],
         ),
@@ -167,4 +186,7 @@ class _MyHomePageState extends State<MyHomePage> {
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
+
+
+
 }
