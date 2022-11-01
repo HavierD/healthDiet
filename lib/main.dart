@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:health_diet/add_new_diet_menu.dart';
 import 'package:health_diet/data/data_one_day.dart';
+import 'package:health_diet/stat_page.dart';
 import 'package:health_diet/toast_exception_alert.dart';
 import 'package:path/path.dart';
 import 'package:pie_chart/pie_chart.dart';
@@ -18,8 +19,8 @@ void main() async {
     onCreate: (db, version) {
       return db.execute(
         'CREATE TABLE if not exists data (date TEXT PRIMARY KEY,milk TEXT, '
-            'nut TEXT, meat TEXT, egg TEXT, vegetable TEXT, fruit TEXT, '
-            'allgrain TEXT , walk TEXT)',
+        'nut TEXT, meat TEXT, egg TEXT, vegetable TEXT, fruit TEXT, '
+        'allgrain TEXT , walk TEXT)',
       );
     },
     version: 1,
@@ -98,8 +99,6 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-
-
   @override
   Widget build(BuildContext context) {
     return Consumer<DataOneDayModel>(
@@ -107,77 +106,72 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  Scaffold buildScaffold(
-      BuildContext context, DataOneDayModel dataOneDayModel, _) {
-    var completedCount = 0.0;
-    // dataOneDayModel.getTodaySnapshot().then((snapshot) {
-    //   for(var e in snapshot.values){
-    //     if (e != null || e != "null"){completedCount++;}
-    //   }
-    //   print("count: $completedCount");
-    //   // dataOneDayModel.refreshUI();
-    // });
-    Map<String, double> dataMap = {
-      "已经完成":  1
-    //       (DataOneDayModel model) {
-    //   model.dbInitChecking();
-    //   var count = 0.0;
-    //   Map<String, Object?> snapshot = <String, Object?>{};
-    //   model.getTodaySnapshot().then((result) {
-    //     snapshot = result;
-    //     return count;
-    //   });
-    //
-    // }(dataOneDayModel),
-    };
-    
+  Scaffold buildScaffold(BuildContext context, DataOneDayModel dataOneDayModel, _) {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
       ),
       body: Center(
-        child:dataOneDayModel.loading
+        child: dataOneDayModel.loading
             ? const CircularProgressIndicator()
-            :  Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text(
-              "今日健康饮食状况：",
-              style: GoogleFonts.maShanZheng(fontSize: 30),
-            ),
-            PieChart(
-              dataMap: {"已经完成" : completedCount},
-              baseChartColor: Colors.grey,
-              totalValue: 7,
-              chartRadius: MediaQuery.of(context).size.width / 2,
-              legendOptions:
-                  const LegendOptions(legendPosition: LegendPosition.bottom),
-            ),
-            CupertinoButton.filled(
-              onPressed: () => {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const AddingNewDietMenu()))
-              },
-              child: Text(
-                "增加新的饮食",
-                  style: GoogleFonts.maShanZheng(fontSize: 20)
+            : Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Text(
+                    "今日健康饮食状况：",
+                    style: GoogleFonts.maShanZheng(fontSize: 30),
+                  ),
+                  PieChart(
+                    dataMap: {"已经完成": dataOneDayModel.completedCount()},
+                    baseChartColor: Colors.grey,
+                    totalValue: 7,
+                    chartRadius: MediaQuery.of(context).size.width / 2,
+                    legendOptions:
+                        const LegendOptions(legendPosition: LegendPosition.bottom),
+                  ),
+                  CupertinoButton.filled(
+                    onPressed: () => {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const AddingNewDietMenu()))
+                    },
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.add_circle_outline),
+                        Text("增加新的饮食", style: GoogleFonts.maShanZheng(fontSize: 20)),
+                      ],
+                    ),
+                  ),
+                  CupertinoButton(
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.bar_chart),
+                          Text(
+                            "查看统计数据与未来建议",
+                            style: GoogleFonts.maShanZheng(fontSize: 20),
+                          ),
+                        ],
+                      ),
+                      onPressed: () => {
+                            Navigator.push(context,
+                                MaterialPageRoute(builder: (context) => const StatPage()))
+                          }),
+                  const Text(
+                    'You have pushed the button this many times:',
+                  ),
+                  Text(
+                    '$_counter',
+                    style: Theme.of(context).textTheme.headline4,
+                  ),
+                  CupertinoButton(
+                    child: const Text("test button"),
+                    onPressed: () => {ToastExceptionAlert.alert("test toast")},
+                  ),
+                ],
               ),
-            ),
-            const Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headline4,
-            ),
-            CupertinoButton(
-              child: const Text("test button"),
-              onPressed: () => {ToastExceptionAlert.alert("test toast")},
-            ),
-          ],
-        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _incrementCounter,
@@ -186,7 +180,4 @@ class _MyHomePageState extends State<MyHomePage> {
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
-
-
-
 }

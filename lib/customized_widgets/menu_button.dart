@@ -1,7 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:health_diet/sub_menu.dart';
 
 class MenuButton extends StatefulWidget {
   final String title;
@@ -29,14 +28,18 @@ class _MenuButtonState extends State<MenuButton> {
         child: CupertinoButton(
           onPressed: () => {
             Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => widget.destinationClass))
+                context, MaterialPageRoute(builder: (context) => widget.destinationClass)
+            )
           },
           color: widget.hasCompleted
-              ? const Color.fromRGBO(51, 204, 51, 1)
-              : const Color.fromRGBO(153, 255, 153, 1),
-          child: Text(widget.title, style: GoogleFonts.maShanZheng(fontSize: 20)),
+              ? const Color.fromRGBO(68, 159, 40, 1.0)
+              : const Color.fromRGBO(136, 176, 140, 1.0),
+          child: Row(
+            children: [
+              Text(widget.title, style: GoogleFonts.maShanZheng(fontSize: 20)),
+              widget.hasCompleted ? const Icon(Icons.check) : const Text(""),
+            ],
+          ),
         ),
       ),
     );

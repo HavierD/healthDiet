@@ -1,7 +1,6 @@
-import 'dart:mirrors';
-import 'package:flutter/material.dart';
 import 'dart:async';
 
+import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:health_diet/toast_exception_alert.dart';
 import 'package:path/path.dart';
@@ -20,15 +19,20 @@ class DataOneDay {
   String? allGrain;
   String? walk;
 
-  DataOneDay({this.milk,
-    this.nut,
-    this.meat,
-    this.egg,
-    this.vegetable,
-    this.fruit,
-    this.allGrain,
-    this.walk,
-    required this.date});
+  set _setMilk(String string) {
+    milk = string;
+  }
+
+  DataOneDay(
+      {this.milk,
+      this.nut,
+      this.meat,
+      this.egg,
+      this.vegetable,
+      this.fruit,
+      this.allGrain,
+      this.walk,
+      required this.date});
 
   Map<String, dynamic> toMap() {
     return {
@@ -47,7 +51,7 @@ class DataOneDay {
 
 class DataOneDayModel extends ChangeNotifier {
   DataOneDay? dataOfToday;
-  final List<DataOneDay> allData = [];
+  final List<DataOneDay> _allData = [];
   bool loading = true;
   Database? db;
 
@@ -55,14 +59,15 @@ class DataOneDayModel extends ChangeNotifier {
 
   DataOneDayModel() {
     _initDietCategoriesInfo();
-    fetchAllData();
+    _fetchAllData();
+
   }
 
-  Future fetchAllData() async {
+  Future _fetchAllData() async {
     db = await initiateDatabase();
     var querySnapshot = await db!.query('data');
     for (var e in querySnapshot) {
-      allData.add(DataOneDay(
+      _allData.add(DataOneDay(
         milk: e["milk"].toString(),
         nut: e["nut"].toString(),
         meat: e["meat"].toString(),
@@ -76,38 +81,40 @@ class DataOneDayModel extends ChangeNotifier {
     }
     getTodayData();
     loading = false;
+    print("let's see all the data:");
+    print(_allData.take(7));
     refreshUI();
   }
-  void dbInitChecking()async{
-    while(db == null){
+
+  void dbInitChecking() async {
+    while (db == null) {
       print("delay 0,1 second");
       await Future.delayed(const Duration(seconds: 1));
     }
   }
-  Future<Map<String, Object?>> getTodaySnapshot()async{
+
+  Future<Map<String, Object?>> getTodaySnapshot() async {
     db = await initiateDatabase();
     var all = await db!.query('data');
     for (var element in all) {
-      if (element['date'] == getTodayDate()){return element;}
+      if (element['date'] == getTodayDate()) {
+        return element;
+      }
     }
     ToastExceptionAlert.alert("获取数据错误！！data_one_day.getTodaySnapshot()");
     refreshUI();
     return <String, Object?>{};
   }
 
-  test(){
-    InstanceMirror mirror = reflect(dataOfToday);
-  }
-
   Future<Database> initiateDatabase() async {
-    allData.clear();
+    _allData.clear();
     final database = openDatabase(
       join(await getDatabasesPath(), 'health_diet.db'),
       onCreate: (db, version) {
         return db.execute(
           'CREATE TABLE if not exists data (date TEXT PRIMARY KEY,milk TEXT, '
-              'nut TEXT, meat TEXT, egg TEXT, vegetable TEXT, fruit TEXT, '
-              'allgrain TEXT , walk TEXT)',
+          'nut TEXT, meat TEXT, egg TEXT, vegetable TEXT, fruit TEXT, '
+          'allgrain TEXT , walk TEXT)',
         );
       },
       version: 1,
@@ -117,7 +124,7 @@ class DataOneDayModel extends ChangeNotifier {
   }
 
   void getTodayData() async {
-    for (var element in allData) {
+    for (var element in _allData) {
       if (element.date == getTodayDate()) {
         dataOfToday = element;
         return;
@@ -136,6 +143,27 @@ class DataOneDayModel extends ChangeNotifier {
     return "${dateTime.year}/${dateTime.month}/${dateTime.day}";
   }
 
+  double completedCount() {
+    if (dataOfToday == null) {
+      ToastExceptionAlert.alert("数据初始化错误！ DataOneDayModel"
+          ".completedCount()");
+      return 0.0;
+    }
+    var all = dataOfToday!.toMap();
+    double count = 0.0;
+    all.forEach((key, value) {
+      if(value != null && value != "null"){
+        count++;
+      }
+    });
+    return count;
+  }
+
+  List<DataOneDay> get7DaysData(){
+    print(_allData);
+    return [];
+  }
+
   // void add (DataOneDay dataOneDay){
   //   data.add(dataOneDay);
   //   update();
@@ -147,11 +175,9 @@ class DataOneDayModel extends ChangeNotifier {
 
   void allNullForDebugging() async {
     var nullA = DataOneDay(date: getTodayDate());
-    await db!.insert(
-        "data", nullA.toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
+    await db!.insert("data", nullA.toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
     refreshUI();
   }
-
 
   DietCategory getDietCategory(DietCategoriesEnum c) {
     for (var e in _dietCategoriesInfo) {
@@ -195,7 +221,7 @@ class DataOneDayModel extends ChangeNotifier {
     await db!.update("data", dataOfToday!.toMap(),
         where: 'date = ?', whereArgs: [dataOfToday!.date]);
     print("have been here?");
-    await fetchAllData();
+    await _fetchAllData();
     refreshUI();
   }
 
@@ -204,17 +230,19 @@ class DataOneDayModel extends ChangeNotifier {
       case DietCategoriesEnum.milk:
         return dataOfToday!.milk.toString();
       case DietCategoriesEnum.nut:
-        return dataOfToday!.milk.toString();
+        return dataOfToday!.nut.toString();
       case DietCategoriesEnum.egg:
-        return dataOfToday!.milk.toString();
+        return dataOfToday!.egg.toString();
       case DietCategoriesEnum.vegetable:
-        return dataOfToday!.milk.toString();
+        return dataOfToday!.vegetable.toString();
       case DietCategoriesEnum.fruit:
-        return dataOfToday!.milk.toString();
+        return dataOfToday!.fruit.toString();
       case DietCategoriesEnum.allGrain:
-        return dataOfToday!.milk.toString();
+        return dataOfToday!.allGrain.toString();
       case DietCategoriesEnum.walk:
-        return dataOfToday!.milk.toString();
+        return dataOfToday!.walk.toString();
+      case DietCategoriesEnum.meat:
+        return dataOfToday!.meat.toString();
       default:
         return "";
     }
@@ -224,7 +252,8 @@ class DataOneDayModel extends ChangeNotifier {
     var milkBtns = {
       "milk": "1 ~ 2杯牛奶",
       "yogurt": "1 ~ 2杯酸奶",
-      "others": "其他奶制品",
+      "others": "其他相似重量奶制品",
+      "toomuch": "摄入过多奶制品",
       "less": "摄入很少奶制品",
       "null": "完全没摄入奶制品"
     };
@@ -232,13 +261,15 @@ class DataOneDayModel extends ChangeNotifier {
       "soybeans": "豆腐等大豆制品",
       "seeds": "花生 / 葵花子等",
       "others": "其他常见坚果",
-      "less": "吃了很少的豆制品/坚果",
+      "toomuch": "吃了太多坚果",
+      "less": "很少的豆制品/坚果",
       "null": "没吃豆制品/坚果",
     };
     var meatBtns = {
       "seafood": "水产品",
       "redmeat": "猪牛羊肉",
       "poultry": "鸡鸭鹅肉",
+      "toomuch": "吃了过多的肉",
       "less": "吃了很少的肉",
       "null": "没吃肉",
     };
@@ -249,7 +280,7 @@ class DataOneDayModel extends ChangeNotifier {
       "null": "没吃鸡蛋",
     };
     var vegBtns = {
-      "vegetable": "蔬菜半斤~1斤（生重）",
+      "vegetable": "蔬菜半斤~1斤",
       "less": "吃了很少蔬菜",
       "null": "没吃蔬菜",
     };
@@ -262,7 +293,7 @@ class DataOneDayModel extends ChangeNotifier {
     var allGrainBtns = {
       "allGrain": "粗粮",
       "beans": "杂豆饭",
-      "less": "吃了很少粗粮/杂豆",
+      "less": "很少的粗粮/杂豆",
       "null": "没吃粗粮/杂豆",
     };
     var walkBtns = {
@@ -274,22 +305,33 @@ class DataOneDayModel extends ChangeNotifier {
       "16000": "13000步以上",
     };
     var milk = DietCategory(
-      DietCategoriesEnum.milk, "奶类", "milk is a ....", milkBtns,);
+      DietCategoriesEnum.milk,
+      "奶类",
+      "奶类包括：纯牛奶；无乳糖牛奶；无糖或少糖酸奶；奶酪；奶片等。名字叫”牛奶饮品“，“奶风味饮料”等为勾兑产品，含过多"
+          "的糖等不健康"
+          "成分。不仅不算此类，还要少吃。如果摄入过多奶制品（比如3盒以上酸奶），请选择“摄入过多奶制品”选项。",
+      milkBtns,
+    );
     var nut = DietCategory(
-      DietCategoriesEnum.nut, "豆制品和坚果", "nut is a ...", nutBtns,);
+      DietCategoriesEnum.nut,
+      "豆制品和坚果",
+      "豆制品和坚果类包括：大豆本身和豆腐，腐竹等豆制品；坚果不仅包括常见坚果（榛子，碧根果等），还包括瓜子，花生。坚果一天不能超过一小把，否则选择：”吃了太多坚果“。",
+      nutBtns,
+    );
     var meat = DietCategory(
-      DietCategoriesEnum.meat, "肉类", "meat is a kind of ...", meatBtns,);
-    var egg = DietCategory(
-        DietCategoriesEnum.egg, "蛋", "Egg is dsfsd... ", eggBtns);
-    var vegetable = DietCategory(
-        DietCategoriesEnum.vegetable, "茎叶类蔬菜", "vegetable is...", vegBtns);
-    var fruit = DietCategory(
-        DietCategoriesEnum.fruit, "水果", "Fruit cannot have... ", fruitBtns);
+      DietCategoriesEnum.meat,
+      "肉类",
+      "meat is a kind of ...",
+      meatBtns,
+    );
+    var egg = DietCategory(DietCategoriesEnum.egg, "蛋", "Egg is dsfsd... ", eggBtns);
+    var vegetable =
+        DietCategory(DietCategoriesEnum.vegetable, "茎叶类蔬菜", "vegetable is...", vegBtns);
+    var fruit =
+        DietCategory(DietCategoriesEnum.fruit, "水果", "Fruit cannot have... ", fruitBtns);
     var allGrain = DietCategory(
-        DietCategoriesEnum.allGrain, "全谷物/杂豆", "all grains is...",
-        allGrainBtns);
-    var walk = DietCategory(
-        DietCategoriesEnum.walk, "步数", "walk counts....", walkBtns);
+        DietCategoriesEnum.allGrain, "全谷物/杂豆", "all grains is...", allGrainBtns);
+    var walk = DietCategory(DietCategoriesEnum.walk, "步数", "walk counts....", walkBtns);
 
     _dietCategoriesInfo.add(milk);
     _dietCategoriesInfo.add(nut);
@@ -300,8 +342,6 @@ class DataOneDayModel extends ChangeNotifier {
     _dietCategoriesInfo.add(allGrain);
     _dietCategoriesInfo.add(walk);
   }
-
-
 }
 
 enum DietCategoriesEnum {

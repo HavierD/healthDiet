@@ -29,41 +29,41 @@ class AddingNewDietMenu extends StatelessWidget {
                 children: <Widget>[
                   RichText(
                     text: const TextSpan(
-                        text: "hello ",
-                        style: TextStyle(fontSize: 25, color: Colors.black),
+                        text: "老妈，选择一个你今天吃过的大类。每个大类里还有几个小类。",
+                        style: TextStyle(fontSize: 20, color: Colors.black),
                         children: <TextSpan>[
                           TextSpan(
-                              text: 'bold',
+                              text: '',
                               style: TextStyle(fontWeight: FontWeight.bold)),
-                          TextSpan(text: ' world!'),
+                          TextSpan(text: ' '),
                         ]),
                   ),
                   MenuButton(
                     title: dataOneDayModel
                         .getDietCategory(DietCategoriesEnum.milk)
                         .categoryTitle,
-                    destinationClass: const MilkMenu(categories: DietCategoriesEnum.milk),
+                    destinationClass: const SubMenu(categories: DietCategoriesEnum.milk),
                     hasCompleted: dataOneDayModel.dataOfToday!.milk != "null",
                   ),
                   MenuButton(
                     title: dataOneDayModel
                         .getDietCategory(DietCategoriesEnum.nut)
                         .categoryTitle,
-                    destinationClass: const MilkMenu(categories: DietCategoriesEnum.nut),
+                    destinationClass: const SubMenu(categories: DietCategoriesEnum.nut),
                     hasCompleted: dataOneDayModel.dataOfToday!.nut != "null",
                   ),
                   MenuButton(
                     title: dataOneDayModel
                         .getDietCategory(DietCategoriesEnum.meat)
                         .categoryTitle,
-                    destinationClass: const MilkMenu(categories: DietCategoriesEnum.meat),
+                    destinationClass: const SubMenu(categories: DietCategoriesEnum.meat),
                     hasCompleted: dataOneDayModel.dataOfToday!.meat != "null",
                   ),
                   MenuButton(
                     title: dataOneDayModel
                         .getDietCategory(DietCategoriesEnum.egg)
                         .categoryTitle,
-                    destinationClass: const MilkMenu(categories: DietCategoriesEnum.egg),
+                    destinationClass: const SubMenu(categories: DietCategoriesEnum.egg),
                     hasCompleted: dataOneDayModel.dataOfToday!.egg != "null",
                   ),
                   MenuButton(
@@ -71,7 +71,7 @@ class AddingNewDietMenu extends StatelessWidget {
                         .getDietCategory(DietCategoriesEnum.vegetable)
                         .categoryTitle,
                     destinationClass:
-                        const MilkMenu(categories: DietCategoriesEnum.vegetable),
+                        const SubMenu(categories: DietCategoriesEnum.vegetable),
                     hasCompleted: dataOneDayModel.dataOfToday!.vegetable != "null",
                   ),
                   MenuButton(
@@ -79,7 +79,7 @@ class AddingNewDietMenu extends StatelessWidget {
                         .getDietCategory(DietCategoriesEnum.fruit)
                         .categoryTitle,
                     destinationClass:
-                        const MilkMenu(categories: DietCategoriesEnum.fruit),
+                        const SubMenu(categories: DietCategoriesEnum.fruit),
                     hasCompleted: dataOneDayModel.dataOfToday!.fruit != "null",
                   ),
                   MenuButton(
@@ -87,14 +87,14 @@ class AddingNewDietMenu extends StatelessWidget {
                         .getDietCategory(DietCategoriesEnum.allGrain)
                         .categoryTitle,
                     destinationClass:
-                        const MilkMenu(categories: DietCategoriesEnum.allGrain),
+                        const SubMenu(categories: DietCategoriesEnum.allGrain),
                     hasCompleted: dataOneDayModel.dataOfToday!.allGrain != "null",
                   ),
                   MenuButton(
                     title: dataOneDayModel
                         .getDietCategory(DietCategoriesEnum.walk)
                         .categoryTitle,
-                    destinationClass: const MilkMenu(categories: DietCategoriesEnum.walk),
+                    destinationClass: const SubMenu(categories: DietCategoriesEnum.walk),
                     hasCompleted: dataOneDayModel.dataOfToday!.walk != "null",
                   ),
                 ],
