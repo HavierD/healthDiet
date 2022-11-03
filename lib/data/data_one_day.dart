@@ -6,6 +6,7 @@ import 'package:health_diet/toast_exception_alert.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
+import 'diet_categories_enum.dart';
 import 'diet_category.dart';
 
 class DataOneDay {
@@ -60,7 +61,6 @@ class DataOneDayModel extends ChangeNotifier {
   DataOneDayModel() {
     _initDietCategoriesInfo();
     _fetchAllData();
-
   }
 
   Future _fetchAllData() async {
@@ -79,16 +79,14 @@ class DataOneDayModel extends ChangeNotifier {
         date: e["date"].toString(),
       ));
     }
+    _allData.sort((a, b)=> a.date.compareTo(b.date) );
     getTodayData();
     loading = false;
-    print("let's see all the data:");
-    print(_allData.take(7));
     refreshUI();
   }
 
   void dbInitChecking() async {
     while (db == null) {
-      print("delay 0,1 second");
       await Future.delayed(const Duration(seconds: 1));
     }
   }
@@ -97,7 +95,7 @@ class DataOneDayModel extends ChangeNotifier {
     db = await initiateDatabase();
     var all = await db!.query('data');
     for (var element in all) {
-      if (element['date'] == getTodayDate()) {
+      if (element['date'] == _getTodayDate()) {
         return element;
       }
     }
@@ -125,22 +123,31 @@ class DataOneDayModel extends ChangeNotifier {
 
   void getTodayData() async {
     for (var element in _allData) {
-      if (element.date == getTodayDate()) {
+      if (element.date == _getTodayDate()) {
         dataOfToday = element;
         return;
       }
     }
     if (dataOfToday == null) {
-      dataOfToday = DataOneDay(date: getTodayDate());
+      dataOfToday = DataOneDay(date: _getTodayDate());
       await db!.insert("data", dataOfToday!.toMap(),
           conflictAlgorithm: ConflictAlgorithm.replace);
       update();
     }
   }
 
-  String getTodayDate() {
+  String _getTodayDate() {
     DateTime dateTime = DateTime.now();
-    return "${dateTime.year}/${dateTime.month}/${dateTime.day}";
+    var month = _monthDateFormat(dateTime.month);
+    var day = _monthDateFormat(dateTime.day);
+    return "${dateTime.year}/$month/$day";
+  }
+
+  String _monthDateFormat(int int) {
+    if (int < 10) {
+      return "0$int";
+    }
+    return "$int";
   }
 
   double completedCount() {
@@ -150,18 +157,46 @@ class DataOneDayModel extends ChangeNotifier {
       return 0.0;
     }
     var all = dataOfToday!.toMap();
-    double count = 0.0;
+    double count = -1.0;
     all.forEach((key, value) {
-      if(value != null && value != "null"){
+      if (value != null && value != "null") {
         count++;
       }
     });
     return count;
   }
 
-  List<DataOneDay> get7DaysData(){
-    print(_allData);
-    return [];
+
+
+  String getChineseWordsByCategory(DietCategoriesEnum category){
+    switch (category) {
+      case DietCategoriesEnum.milk:
+        return "奶类";
+      case DietCategoriesEnum.nut:
+        return "坚果";
+      case DietCategoriesEnum.meat:
+        return "肉";
+      case DietCategoriesEnum.egg:
+        return "蛋";
+      case DietCategoriesEnum.vegetable:
+        return "菜";
+      case DietCategoriesEnum.fruit:
+        return "水果";
+      case DietCategoriesEnum.allgrain:
+        return "全谷";
+      case DietCategoriesEnum.walk:
+        return "走路";
+      default:
+        ToastExceptionAlert.alert("获取中文名错误！DataOneDayModel.getChineseWordsByCategory()");
+        return "";
+    }
+  }
+
+  List<DataOneDay> getData(int days) {
+    if(days == 0){
+      return _allData;
+    }
+    return _allData.take(days).toList();
   }
 
   // void add (DataOneDay dataOneDay){
@@ -174,7 +209,7 @@ class DataOneDayModel extends ChangeNotifier {
   }
 
   void allNullForDebugging() async {
-    var nullA = DataOneDay(date: getTodayDate());
+    var nullA = DataOneDay(date: _getTodayDate());
     await db!.insert("data", nullA.toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
     refreshUI();
   }
@@ -209,7 +244,7 @@ class DataOneDayModel extends ChangeNotifier {
       case DietCategoriesEnum.fruit:
         dataOfToday!.fruit = content;
         break;
-      case DietCategoriesEnum.allGrain:
+      case DietCategoriesEnum.allgrain:
         dataOfToday!.allGrain = content;
         break;
       case DietCategoriesEnum.walk:
@@ -220,10 +255,29 @@ class DataOneDayModel extends ChangeNotifier {
     }
     await db!.update("data", dataOfToday!.toMap(),
         where: 'date = ?', whereArgs: [dataOfToday!.date]);
-    print("have been here?");
     await _fetchAllData();
     refreshUI();
   }
+
+
+  String completeness(DietCategoriesEnum category){
+    num total = 0;
+    for(var one in getData(10)){
+      var second = one.toMap();
+
+      print("what is the value? ${second[category.toString().substring(19)]}");
+      if(second[category.toString().substring(19)] != "null" && second[category
+          .toString().substring(19)] != null){
+        total = total + 1;
+      }
+    }
+    print("the total? $total");
+    double arg = total / getData(10).length;
+    double percentage2 = arg * 100;
+    int percentage = percentage2.round();
+    return "$percentage";
+  }
+
 
   String getDBValueByCategory(DietCategoriesEnum category) {
     switch (category) {
@@ -237,7 +291,7 @@ class DataOneDayModel extends ChangeNotifier {
         return dataOfToday!.vegetable.toString();
       case DietCategoriesEnum.fruit:
         return dataOfToday!.fruit.toString();
-      case DietCategoriesEnum.allGrain:
+      case DietCategoriesEnum.allgrain:
         return dataOfToday!.allGrain.toString();
       case DietCategoriesEnum.walk:
         return dataOfToday!.walk.toString();
@@ -330,7 +384,7 @@ class DataOneDayModel extends ChangeNotifier {
     var fruit =
         DietCategory(DietCategoriesEnum.fruit, "水果", "Fruit cannot have... ", fruitBtns);
     var allGrain = DietCategory(
-        DietCategoriesEnum.allGrain, "全谷物/杂豆", "all grains is...", allGrainBtns);
+        DietCategoriesEnum.allgrain, "全谷物/杂豆", "all grains is...", allGrainBtns);
     var walk = DietCategory(DietCategoriesEnum.walk, "步数", "walk counts....", walkBtns);
 
     _dietCategoriesInfo.add(milk);
@@ -342,16 +396,8 @@ class DataOneDayModel extends ChangeNotifier {
     _dietCategoriesInfo.add(allGrain);
     _dietCategoriesInfo.add(walk);
   }
+
+
 }
 
-enum DietCategoriesEnum {
-  milk,
-  nut,
-  meat,
-  egg,
-  vegetable,
-  fruit,
-  allGrain,
-  walk,
-  forDefault,
-}
+

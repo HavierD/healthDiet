@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:health_diet/data/data_one_day.dart';
-import 'package:health_diet/sub_menu.dart';
+import 'package:health_diet/sub_menu_page.dart';
 import 'package:provider/provider.dart';
 
 import 'customized_widgets/common_format.dart';
 import 'customized_widgets/menu_button.dart';
+import 'data/diet_categories_enum.dart';
+import 'global_customized_words.dart';
 
 class AddingNewDietMenu extends StatelessWidget {
   const AddingNewDietMenu({Key? key}) : super(key: key);
@@ -28,8 +30,8 @@ class AddingNewDietMenu extends StatelessWidget {
             : Column(
                 children: <Widget>[
                   RichText(
-                    text: const TextSpan(
-                        text: "老妈，选择一个你今天吃过的大类。每个大类里还有几个小类。",
+                    text: TextSpan(
+                        text: "${Global.title}，选择一个你今天吃过的大类。每个大类里还有几个小类。",
                         style: TextStyle(fontSize: 20, color: Colors.black),
                         children: <TextSpan>[
                           TextSpan(
@@ -84,10 +86,10 @@ class AddingNewDietMenu extends StatelessWidget {
                   ),
                   MenuButton(
                     title: dataOneDayModel
-                        .getDietCategory(DietCategoriesEnum.allGrain)
+                        .getDietCategory(DietCategoriesEnum.allgrain)
                         .categoryTitle,
                     destinationClass:
-                        const SubMenu(categories: DietCategoriesEnum.allGrain),
+                        const SubMenu(categories: DietCategoriesEnum.allgrain),
                     hasCompleted: dataOneDayModel.dataOfToday!.allGrain != "null",
                   ),
                   MenuButton(

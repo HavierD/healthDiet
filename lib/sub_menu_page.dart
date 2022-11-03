@@ -6,6 +6,7 @@ import 'package:health_diet/customized_widgets/common_format.dart';
 import 'package:provider/provider.dart';
 
 import 'data/data_one_day.dart';
+import 'data/diet_categories_enum.dart';
 
 class SubMenu extends StatefulWidget {
   final DietCategoriesEnum categories;
@@ -28,7 +29,6 @@ class _SubMenuState extends State<SubMenu> {
     List<Widget> generateMenuButtons() {
       List<Widget> re = [];
       for (var btnInfo in c.buttonValueAndTitles.entries) {
-        print('${dataOneDayModel.getDBValueByCategory(widget.categories)} ?= ${btnInfo.key}');
         var w = FractionallySizedBox(
           widthFactor: 0.9,
           child: Padding(

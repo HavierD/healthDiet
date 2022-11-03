@@ -1,51 +1,28 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:health_diet/add_new_diet_menu.dart';
+import 'package:health_diet/add_new_diet_menu_page.dart';
 import 'package:health_diet/data/data_one_day.dart';
-import 'package:health_diet/stat_page.dart';
-import 'package:health_diet/toast_exception_alert.dart';
+import 'package:health_diet/notifications.dart';
+import 'package:health_diet/suggestion_page.dart';
 import 'package:path/path.dart';
 import 'package:pie_chart/pie_chart.dart';
 import 'package:provider/provider.dart';
 import 'package:sqflite/sqflite.dart';
 
+final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+    FlutterLocalNotificationsPlugin();
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(const MyApp());
 
-  final database = openDatabase(
-    join(await getDatabasesPath(), 'health_diet.db'),
-    onCreate: (db, version) {
-      return db.execute(
-        'CREATE TABLE if not exists data (date TEXT PRIMARY KEY,milk TEXT, '
-        'nut TEXT, meat TEXT, egg TEXT, vegetable TEXT, fruit TEXT, '
-        'allgrain TEXT , walk TEXT)',
-      );
-    },
-    version: 1,
+  Notifications.showScheduledNotification(
+    title: "别忘了记录今天的饮食哦！",
+    // scheduledTime: DateTime.now().add(Duration(seconds: 5))
+    scheduledTime: DateTime(2022, 11, 2, 20, 0, 0),
   );
-
-  Future<List<DataOneDay>> datata() async {
-    // Get a reference to the database.
-    final db = await database;
-
-    // Query the table for all The Dogs.
-    final List<Map<String, dynamic>> maps = await db.query('data');
-
-    // Convert the List<Map<String, dynamic> into a List<Dog>.
-    return List.generate(maps.length, (i) {
-      return DataOneDay(
-        // id: maps[i]['id'],
-        date: maps[i]['date'],
-      );
-    });
-  }
-
-  var aaa = await datata();
-  var bbb = aaa.length;
-  print("here");
-  print(bbb);
 }
 
 class MyApp extends StatelessWidget {
@@ -57,11 +34,11 @@ class MyApp extends StatelessWidget {
     return ChangeNotifierProvider(
       create: (context) => DataOneDayModel(),
       child: MaterialApp(
-        title: 'Flutter Demo',
+        title: '健康饮食',
         theme: ThemeData(
           primarySwatch: Colors.lightGreen,
         ),
-        home: const MyHomePage(title: 'Flutter Demo Home Page'),
+        home: const MyHomePage(title: '戴怀志的健康饮食app'),
       ),
     );
   }
@@ -69,15 +46,6 @@ class MyApp extends StatelessWidget {
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
 
   final String title;
 
@@ -87,6 +55,12 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    Notifications.initialize(flutterLocalNotificationsPlugin);
+  }
 
   void _incrementCounter() {
     setState(() {
@@ -109,7 +83,10 @@ class _MyHomePageState extends State<MyHomePage> {
   Scaffold buildScaffold(BuildContext context, DataOneDayModel dataOneDayModel, _) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.title),
+        title: Text(
+          widget.title,
+          style: GoogleFonts.maShanZheng(fontSize: 25, fontStyle: FontStyle.italic),
+        ),
       ),
       body: Center(
         child: dataOneDayModel.loading
@@ -156,8 +133,11 @@ class _MyHomePageState extends State<MyHomePage> {
                         ],
                       ),
                       onPressed: () => {
-                            Navigator.push(context,
-                                MaterialPageRoute(builder: (context) => const StatPage()))
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => const SuggestionPage()),
+                            ),
                           }),
                   const Text(
                     'You have pushed the button this many times:',
@@ -168,7 +148,9 @@ class _MyHomePageState extends State<MyHomePage> {
                   ),
                   CupertinoButton(
                     child: const Text("test button"),
-                    onPressed: () => {ToastExceptionAlert.alert("test toast")},
+                    onPressed: () => {
+
+                    },
                   ),
                 ],
               ),

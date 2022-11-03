@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:health_diet/data/data_one_day.dart';
+
+import 'diet_categories_enum.dart';
 
 class DietCategory {
   final DietCategoriesEnum category;
